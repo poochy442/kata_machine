@@ -1,5 +1,3 @@
 /target
 .vscode/*
-csharp/*
-rust/*
-typescript/*
+*/*/day*/*
