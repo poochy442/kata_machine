@@ -28,7 +28,7 @@ path = "main.rs"
 
     create_file_with_content(day_folder_path, "main.rs", &main_file_content)?;
     create_file_with_content(day_folder_path, "test.rs", &test_file_content)?;
-    create_file_with_content(day_folder_path, "cargo.toml", &cargo_file_content)?;
+    create_file_with_content(day_folder_path, "Cargo.toml", &cargo_file_content)?;
     Ok(())
 }
 
