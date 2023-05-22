@@ -2,8 +2,9 @@
 name = "kata_machine"
 version = "0.1.0"
 edition = "2021"
-license = "MIT"
+authors = ["Poochy442"]
 description = "A quick way to generate a sandbox, start coding and easily test your katas across multiple languages"
+license = "MIT"
 homepage = "https://github.com/poochy442/kata_machine"
 repository = "https://github.com/poochy442/kata_machine"
 readme = "README.md"
@@ -21,3 +22,6 @@ path = "src/lib.rs"
 [[bin]]
 name = "kata_machine"
 path = "src/main.rs"
+
+[package.metadata]
+package-name = "kata_machine"
