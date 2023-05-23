@@ -44,7 +44,9 @@ pub fn run_rust_tests(day_folder_path: &Path) -> Result<(), String> {
 }
 
 fn generate_rust_calculator_files() -> (String, String) {
-    let program_file_content = r#"pub fn add_numbers(num1: &str, num2: &str) -> i32 {
+    let program_file_content = r#"mod test;
+
+pub fn add_numbers(num1: &str, num2: &str) -> i32 {
     // Implement the addition logic here
     // ...
 }"#
@@ -53,7 +55,7 @@ fn generate_rust_calculator_files() -> (String, String) {
 
     let test_file_content = r#"#[cfg(test)]
 mod tests {
-    use super::*;
+    use crate::add_numbers;
 
     #[test]
     fn test_add_numbers() {
