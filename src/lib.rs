@@ -220,7 +220,13 @@ fn link_rust_analyzer(current_dir: &PathBuf, day_folder_path: &PathBuf) -> Resul
         .and_then(|value| value.as_array_mut())
         .ok_or("Invalid settings file format")?;
 
-    linked_projects.push(json!("<day_folder>/Cargo.toml"));
+    linked_projects.push(json!(format!(
+        "{}/Cargo.toml",
+        day_folder_path
+            .strip_prefix(&current_dir)
+            .unwrap()
+            .display()
+    )));
 
     // Replace "<day_folder>" with actual day folder path
     settings_content = serde_json::to_string_pretty(&settings_json)
