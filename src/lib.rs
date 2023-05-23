@@ -7,8 +7,10 @@ mod languages {
 
 use languages::{csharp, rust, typescript};
 use serde::{Deserialize, Serialize};
+use serde_json::{json, Value};
 use std::{
-    fs,
+    fs::{self, File},
+    io::{Read, Write},
     path::PathBuf,
     process::{Command, Stdio},
 };
@@ -92,6 +94,11 @@ pub fn generate_kata(input: KataInput) -> Result<(), String> {
     fs::create_dir(&day_folder_path).unwrap();
 
     generate_source_files(&day_folder_path, input.language, input.kata)?;
+
+    match input.language {
+        Language::Rust => link_rust_analyzer(&current_dir, &day_folder_path)?,
+        _ => (),
+    }
 
     let session = Session {
         language: input.language.as_str(),
@@ -179,6 +186,54 @@ fn generate_source_files(
         Language::Rust => rust::generate_rust_files(day_folder_path, kata),
         Language::CSharp => csharp::generate_csharp_files(day_folder_path, kata),
     }
+}
+
+fn link_rust_analyzer(current_dir: &PathBuf, day_folder_path: &PathBuf) -> Result<(), String> {
+    let vscode_dir = current_dir.join(".vscode");
+    if !vscode_dir.exists() {
+        fs::create_dir(&vscode_dir)
+            .map_err(|e| format!("Failed to create .vscode directory: {}", e))?;
+    }
+
+    let settings_path = vscode_dir.join("settings.json");
+    let mut settings_content = String::new();
+    let mut settings_json: Value = json!({
+        "rust-analyzer.linkedProjects": [
+        ]
+    });
+
+    if settings_path.exists() {
+        // Read existing settings file content
+        let mut file = File::open(&settings_path)
+            .map_err(|e| format!("Failed to open settings file: {}", e))?;
+        file.read_to_string(&mut settings_content)
+            .map_err(|e| format!("Failed to read settings file: {}", e))?;
+
+        // Parse existing content as JSON
+        settings_json = serde_json::from_str(&settings_content)
+            .map_err(|e| format!("Failed to parse settings file as JSON: {}", e))?;
+    }
+
+    // Modify the array of linked projects
+    let linked_projects = settings_json
+        .get_mut("rust-analyzer.linkedProjects")
+        .and_then(|value| value.as_array_mut())
+        .ok_or("Invalid settings file format")?;
+
+    linked_projects.push(json!("<day_folder>/Cargo.toml"));
+
+    // Replace "<day_folder>" with actual day folder path
+    settings_content = serde_json::to_string_pretty(&settings_json)
+        .map_err(|e| format!("Failed to serialize settings JSON: {}", e))?;
+    settings_content = settings_content.replace("<day_folder>", &day_folder_path.to_string_lossy());
+
+    // Write the updated content back to the file
+    let mut file = File::create(&settings_path)
+        .map_err(|e| format!("Failed to create settings file: {}", e))?;
+    file.write_all(settings_content.as_bytes())
+        .map_err(|e| format!("Failed to write to settings file: {}", e))?;
+
+    Ok(())
 }
 
 fn check_and_install_tool(tool_name: &str, package_name: &str) -> Result<(), String> {
