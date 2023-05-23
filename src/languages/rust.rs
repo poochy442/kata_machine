@@ -19,14 +19,13 @@ edition = "2021"
 
 [dependencies]
 
-[[bin]]
-name = "kata_machine_rust_calculator_day{}"
-path = "main.rs"
+[lib]
+path = "lib.rs"
 "#,
-        day, day,
+        day,
     );
 
-    create_file_with_content(day_folder_path, "main.rs", &main_file_content)?;
+    create_file_with_content(day_folder_path, "lib.rs", &main_file_content)?;
     create_file_with_content(day_folder_path, "test.rs", &test_file_content)?;
     create_file_with_content(day_folder_path, "Cargo.toml", &cargo_file_content)?;
     Ok(())
