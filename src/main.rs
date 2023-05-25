@@ -71,14 +71,14 @@ fn validate_test_input(language: &str, kata: &str) -> Result<(Language, Kata), S
 
     let session_file_path = current_dir.join("session.json");
 
-    let session_json = fs::read_to_string(&session_file_path)
+    let session_json = fs::read_to_string(session_file_path)
         .map_err(|err| format!("Error reading session file: {}", err))?;
 
     let session: Session = serde_json::from_str(&session_json)
         .map_err(|err| format!("Error parsing session JSON: {}", err))?;
 
-    let l = Language::from_str(session.language).unwrap();
-    let k = Kata::from_str(session.kata).unwrap();
+    let l = Language::get(session.language).unwrap();
+    let k = Kata::get(session.kata).unwrap();
 
     Ok((l, k))
 }
@@ -92,7 +92,7 @@ fn validate_language(language: &str) -> Result<Language, String> {
             valid_languages.join(", ")
         ));
     }
-    Ok(Language::from_str(language).unwrap())
+    Ok(Language::get(language).unwrap())
 }
 
 fn validate_kata(kata: &str) -> Result<Kata, String> {
@@ -104,5 +104,5 @@ fn validate_kata(kata: &str) -> Result<Kata, String> {
             valid_katas.join(", ")
         ));
     }
-    Ok(Kata::from_str(kata).unwrap())
+    Ok(Kata::get(kata).unwrap())
 }
