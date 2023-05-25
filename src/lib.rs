@@ -1,17 +1,13 @@
 mod file_utils;
-mod languages {
-    pub mod csharp;
-    pub mod rust;
-    pub mod typescript;
-}
+mod languages;
 
-use languages::{csharp, rust, typescript};
+use languages::{csharp::commands::*, rust::commands::*, typescript::commands::*};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use std::{
     fs::{self, File},
     io::{Read, Write},
-    path::PathBuf,
+    path::{Path, PathBuf},
     process::{Command, Stdio},
 };
 
@@ -31,7 +27,7 @@ impl Language {
         }
     }
 
-    pub fn from_str(s: &str) -> Option<Self> {
+    pub fn get(s: &str) -> Option<Self> {
         match s {
             "cs" => Some(Language::CSharp),
             "csharp" => Some(Language::CSharp),
@@ -57,7 +53,7 @@ impl Kata {
         }
     }
 
-    pub fn from_str(s: &str) -> Option<Self> {
+    pub fn get(s: &str) -> Option<Self> {
         match s {
             "calculator" => Some(Kata::Calculator),
             "dsa" => Some(Kata::Dsa),
@@ -95,9 +91,8 @@ pub fn generate_kata(input: KataInput) -> Result<(), String> {
 
     generate_source_files(&day_folder_path, input.language, input.kata)?;
 
-    match input.language {
-        Language::Rust => link_rust_analyzer(&current_dir, &day_folder_path)?,
-        _ => (),
+    if let Language::Rust = input.language {
+        link_rust_analyzer(&current_dir, &day_folder_path)?;
     }
 
     let session = Session {
@@ -122,9 +117,9 @@ pub fn run_tests(kata_input: KataInput) -> Result<(), String> {
     let day_folder_path = find_most_recent_day_folder(&kata_dir).ok_or("No day folders found.")?;
 
     match kata_input.language {
-        Language::Rust => rust::run_rust_tests(&day_folder_path),
-        Language::TS => typescript::run_typescript_tests(&day_folder_path),
-        Language::CSharp => csharp::run_csharp_tests(&day_folder_path),
+        Language::Rust => run_rust_tests(&day_folder_path),
+        Language::TS => run_typescript_tests(&day_folder_path),
+        Language::CSharp => run_csharp_tests(&day_folder_path),
     }
 }
 
@@ -164,7 +159,7 @@ fn find_most_recent_day_folder(kata_dir: &PathBuf) -> Option<PathBuf> {
     }
 }
 
-fn find_next_day_folder(kata_dir: &std::path::PathBuf) -> PathBuf {
+fn find_next_day_folder(kata_dir: &Path) -> PathBuf {
     let mut day_folder = 1;
     let mut day_folder_path = kata_dir.join(&format!("day{}", day_folder));
 
@@ -182,13 +177,13 @@ fn generate_source_files(
     kata: Kata,
 ) -> Result<(), String> {
     match language {
-        Language::TS => typescript::generate_typescript_files(day_folder_path, kata),
-        Language::Rust => rust::generate_rust_files(day_folder_path, kata),
-        Language::CSharp => csharp::generate_csharp_files(day_folder_path, kata),
+        Language::TS => generate_typescript_files(day_folder_path, kata),
+        Language::Rust => generate_rust_files(day_folder_path, kata),
+        Language::CSharp => generate_csharp_files(day_folder_path, kata),
     }
 }
 
-fn link_rust_analyzer(current_dir: &PathBuf, day_folder_path: &PathBuf) -> Result<(), String> {
+fn link_rust_analyzer(current_dir: &PathBuf, day_folder_path: &Path) -> Result<(), String> {
     let vscode_dir = current_dir.join(".vscode");
     if !vscode_dir.exists() {
         fs::create_dir(&vscode_dir)
@@ -222,10 +217,7 @@ fn link_rust_analyzer(current_dir: &PathBuf, day_folder_path: &PathBuf) -> Resul
 
     linked_projects.push(json!(format!(
         "{}/Cargo.toml",
-        day_folder_path
-            .strip_prefix(&current_dir)
-            .unwrap()
-            .display()
+        day_folder_path.strip_prefix(current_dir).unwrap().display()
     )));
 
     // Replace "<day_folder>" with actual day folder path
@@ -253,7 +245,7 @@ fn check_and_install_tool(tool_name: &str, package_name: &str) -> Result<(), Str
                 .stderr(Stdio::inherit())
                 .output();
 
-            if let Ok(_) = output {
+            if output.is_ok() {
                 println!("{} is already installed.", tool_name);
                 Ok(())
             } else {
