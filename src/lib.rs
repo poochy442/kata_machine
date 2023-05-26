@@ -74,6 +74,15 @@ pub struct Session<'a> {
     pub day: PathBuf,
 }
 
+pub fn init() -> Result<(), String> {
+    check_and_install_tool("dotnet", "dotnet-sdk-6.0")?;
+    check_and_install_tool("npm", "npm")?;
+    check_and_install_tool("rust", "")?;
+
+    println!("Initialization completed successfully.");
+    Ok(())
+}
+
 pub fn generate_kata(input: KataInput) -> Result<(), String> {
     let current_dir = std::env::current_dir().unwrap();
     let language_dir = current_dir.join(input.language.as_str());
@@ -123,12 +132,46 @@ pub fn run_tests(kata_input: KataInput) -> Result<(), String> {
     }
 }
 
-pub fn init() -> Result<(), String> {
-    check_and_install_tool("dotnet", "dotnet-sdk-6.0")?;
-    check_and_install_tool("npm", "npm")?;
-    check_and_install_tool("rust", "")?;
+pub fn clean() -> Result<(), String> {
+    let current_dir =
+        std::env::current_dir().map_err(|e| format!("Failed to get current directory: {}", e))?;
 
-    println!("Initialization completed successfully.");
+    let session_path = current_dir.join("session.json");
+    if session_path.exists() {
+        std::fs::remove_file(&session_path)
+            .map_err(|e| format!("Failed to remove session.json: {}", e))?;
+    }
+
+    let vscode_settings_path = current_dir.join(".vscode/settings.json");
+    if vscode_settings_path.exists() {
+        let settings_content = std::fs::read_to_string(&vscode_settings_path)
+            .map_err(|e| format!("Failed to read settings.json: {}", e))?;
+        let mut settings_json: serde_json::Value = serde_json::from_str(&settings_content)
+            .map_err(|e| format!("Failed to parse settings.json: {}", e))?;
+
+        if settings_json.get("rust-analyzer.linkedProjects").is_some() {
+            settings_json
+                .as_object_mut()
+                .unwrap()
+                .remove("rust-analyzer.linkedProjects");
+            let updated_settings_content = serde_json::to_string_pretty(&settings_json)
+                .map_err(|e| format!("Failed to serialize updated settings.json: {}", e))?;
+
+            std::fs::write(&vscode_settings_path, &updated_settings_content)
+                .map_err(|e| format!("Failed to write updated settings.json: {}", e))?;
+        }
+    }
+
+    let languages_dir = ["rust", "csharp", "typescript"];
+    for language in languages_dir {
+        let language_dir = current_dir.join(language);
+        if language_dir.exists() {
+            std::fs::remove_dir_all(&language_dir)
+                .map_err(|e| format!("Failed to remove the {} directory: {}", language, e))?;
+        }
+    }
+
+    println!("Cleanup completed successfully.");
     Ok(())
 }
 

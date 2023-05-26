@@ -12,6 +12,7 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
+    Init,
     Generate {
         #[arg(short, long, default_value_t = String::from("rust"))]
         language: String,
@@ -24,13 +25,14 @@ enum Commands {
         #[arg(short, long, default_value_t = String::from("session"))]
         kata: String,
     },
-    Init,
+    Clean,
 }
 
 fn main() -> Result<(), String> {
     let cli = Cli::parse();
 
     match &cli.command {
+        Some(Commands::Init) => kata_machine::init(),
         Some(Commands::Generate { language, kata }) => {
             let (l, k) = validate_generate_input(language, kata)?;
             kata_machine::generate_kata(KataInput {
@@ -45,9 +47,9 @@ fn main() -> Result<(), String> {
                 kata: k,
             })
         }
-        Some(Commands::Init) => kata_machine::init(),
+        Some(Commands::Clean) => kata_machine::clean(),
         None => Err(String::from(
-            "Invalid command. Available commands: generate, test",
+            "Invalid command. Available commands: init, generate, test, clean",
         )),
     }
 }
