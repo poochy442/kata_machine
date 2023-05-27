@@ -19,12 +19,7 @@ enum Commands {
         #[arg(short, long, default_value_t = String::from("calculator"))]
         kata: String,
     },
-    Test {
-        #[arg(short, long, default_value_t = String::from("session"))]
-        language: String,
-        #[arg(short, long, default_value_t = String::from("session"))]
-        kata: String,
-    },
+    Test,
     Clean,
 }
 
@@ -40,8 +35,8 @@ fn main() -> Result<(), String> {
                 kata: k,
             })
         }
-        Some(Commands::Test { language, kata }) => {
-            let (l, k) = validate_test_input(language, kata)?;
+        Some(Commands::Test) => {
+            let (l, k) = get_test_input_from_session()?;
             kata_machine::run_tests(KataInput {
                 language: l,
                 kata: k,
@@ -61,15 +56,9 @@ fn validate_generate_input(language: &str, kata: &str) -> Result<(Language, Kata
     Ok((l, k))
 }
 
-fn validate_test_input(language: &str, kata: &str) -> Result<(Language, Kata), String> {
+fn get_test_input_from_session() -> Result<(Language, Kata), String> {
     let current_dir = std::env::current_dir()
         .map_err(|err| format!("Error getting current directory: {}", err))?;
-
-    if language.is_empty() | kata.is_empty() | !((language == "session") | (kata == "session")) {
-        let l = validate_language(language)?;
-        let k = validate_kata(kata)?;
-        return Ok((l, k));
-    }
 
     let session_file_path = current_dir.join("session.json");
 

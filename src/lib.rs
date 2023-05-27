@@ -144,22 +144,8 @@ pub fn clean() -> Result<(), String> {
 
     let vscode_settings_path = current_dir.join(".vscode/settings.json");
     if vscode_settings_path.exists() {
-        let settings_content = std::fs::read_to_string(&vscode_settings_path)
-            .map_err(|e| format!("Failed to read settings.json: {}", e))?;
-        let mut settings_json: serde_json::Value = serde_json::from_str(&settings_content)
-            .map_err(|e| format!("Failed to parse settings.json: {}", e))?;
-
-        if settings_json.get("rust-analyzer.linkedProjects").is_some() {
-            settings_json
-                .as_object_mut()
-                .unwrap()
-                .remove("rust-analyzer.linkedProjects");
-            let updated_settings_content = serde_json::to_string_pretty(&settings_json)
-                .map_err(|e| format!("Failed to serialize updated settings.json: {}", e))?;
-
-            std::fs::write(&vscode_settings_path, &updated_settings_content)
-                .map_err(|e| format!("Failed to write updated settings.json: {}", e))?;
-        }
+        std::fs::remove_file(&session_path)
+            .map_err(|e| format!("Failed to remove .vscode/settings.json: {}", e))?;
     }
 
     let languages_dir = ["rust", "csharp", "typescript"];
