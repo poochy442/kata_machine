@@ -1,6 +1,6 @@
 [package]
 name = "kata_machine"
-version = "0.1.6"
+version = "0.1.7"
 edition = "2021"
 authors = ["Poochy442"]
 description = "A quick way to generate a sandbox, start coding and easily test your katas across multiple languages"
