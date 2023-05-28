@@ -144,7 +144,7 @@ pub fn clean() -> Result<(), String> {
 
     let vscode_settings_path = current_dir.join(".vscode/settings.json");
     if vscode_settings_path.exists() {
-        std::fs::remove_file(&session_path)
+        std::fs::remove_file(&vscode_settings_path)
             .map_err(|e| format!("Failed to remove .vscode/settings.json: {}", e))?;
     }
 
