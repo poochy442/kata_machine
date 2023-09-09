@@ -10,6 +10,7 @@ pub fn generate_rust_files(day_folder_path: &Path, kata: Kata) -> Result<(), Str
     let (main_file_content, test_file_content) = match kata {
         Kata::Calculator => generate_rust_calculator_files(),
         Kata::Dsa => generate_rust_dsa_files(),
+        Kata::Blank => (String::new(), String::new()),
     };
 
     let day = day_folder_path.file_name().unwrap().to_string_lossy();

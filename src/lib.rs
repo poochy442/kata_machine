@@ -43,6 +43,7 @@ impl Language {
 pub enum Kata {
     Calculator,
     Dsa,
+    Blank,
 }
 
 impl Kata {
@@ -50,6 +51,7 @@ impl Kata {
         match self {
             Kata::Calculator => "calculator",
             Kata::Dsa => "dsa",
+            Kata::Blank => "blank"
         }
     }
 
@@ -57,6 +59,7 @@ impl Kata {
         match s {
             "calculator" => Some(Kata::Calculator),
             "dsa" => Some(Kata::Dsa),
+            "blank" => Some(Kata::Blank),
             _ => None,
         }
     }

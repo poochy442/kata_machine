@@ -87,7 +87,7 @@ fn validate_language(language: &str) -> Result<Language, String> {
 }
 
 fn validate_kata(kata: &str) -> Result<Kata, String> {
-    let valid_katas = ["calculator", "dsa"];
+    let valid_katas = ["calculator", "dsa", "blank"];
     if !valid_katas.contains(&kata) {
         return Err(format!(
             "Invalid kata: {}. Supported katas are: {}",

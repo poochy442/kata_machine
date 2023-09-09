@@ -76,3 +76,26 @@ pub fn generate_typescript_dsa_files() -> (String, String) {
 
     (program_file_content, test_file_content)
 }
+
+pub fn generate_typescript_blank_files() -> (String, String) {
+    let program_file_content = r#"export function solution() {
+    // Implement the solution logic here
+    // ...
+}"#
+    .trim()
+    .to_string();
+
+    let test_file_content = r#"import { solution } from './solution';
+import { describe, it, expect } from '@jest/globals';
+
+describe('Solution', () => {
+    it('should be callable', () => {
+        expect(() => solution()).not.toThrow();
+        // Add more test cases here
+    });
+});"#
+        .trim()
+        .to_string();
+
+    (program_file_content, test_file_content)
+}

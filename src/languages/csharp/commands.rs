@@ -1,15 +1,15 @@
+use super::generation::*;
 use crate::{file_utils::create_file_with_content, Kata};
 use std::{
     path::{Path, PathBuf},
     process::{Command, Stdio},
 };
 
-use super::generation::*;
-
 pub fn generate_csharp_files(day_folder_path: &PathBuf, kata: Kata) -> Result<(), String> {
     let (program_file_content, test_file_content) = match kata {
         Kata::Calculator => generate_csharp_calculator_files(),
         Kata::Dsa => generate_csharp_dsa_files(),
+        Kata::Blank => (String::new(), String::new()),
     };
 
     let project_file_content = generate_project_file();
